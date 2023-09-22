@@ -22,6 +22,9 @@ class ArticlesController {
 
       const id = req.params.id;
       const updatedArticle = await articlesService.updateArticle(id, req.body, req.user._id);
+      if (!updatedArticle) {
+        throw new NotFoundError("Article not found");
+      }
       res.json(updatedArticle);
     } catch (err) {
       next(err);

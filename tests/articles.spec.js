@@ -3,7 +3,12 @@ const { app } = require("../server");
 const jwt = require("jsonwebtoken");
 const config = require("../config");
 const mockingoose = require("mockingoose");
+const User = require("../api/users/users.model");
+const usersService = require("../api/users/users.service");
 const Article = require("../api/articles/articles.model");
+const articlesService = require("../api/articles/articles.service");
+
+jest.mock('../api/users/users.service');
 
 describe("Article API tests", () => {
   let token;
@@ -22,10 +27,19 @@ describe("Article API tests", () => {
     content: "New Test Content",
   };
 
+  const mockArticleInstance = {
+    ...MOCK_ARTICLE_DATA[0]
+  };
+  
+  mockArticleInstance.save = jest.fn().mockResolvedValue(mockArticleInstance);
+  mockArticleInstance.remove = jest.fn().mockResolvedValue({ ok: 1 });
+  
   beforeEach(() => {
-    token = jwt.sign({ userId: USER_ID }, config.secretJwtToken);
+    token = jwt.sign({ userId: USER_ID, role: 'admin' }, config.secretJwtToken);
     mockingoose(Article).toReturn(MOCK_ARTICLE_DATA, "find");
-    mockingoose(Article).toReturn(MOCK_ARTICLE_CREATED, "save");
+    jest.spyOn(Article, 'findById').mockResolvedValue(mockArticleInstance);
+    mockingoose(User).toReturn({ _id: USER_ID, role: 'admin' }, "findOne");
+    usersService.get.mockResolvedValue({ _id: USER_ID, role: 'admin' });
   });
 
   test("[Articles] Create Article", async () => {

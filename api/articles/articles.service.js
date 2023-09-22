@@ -12,7 +12,7 @@ const updateArticle = async (id, data, userId) => {
     Object.assign(article, data);
     return await article.save();
   }
-  return null;
+  return false;
 };
 
 const deleteArticle = async (id, userId) => {
@@ -22,7 +22,7 @@ const deleteArticle = async (id, userId) => {
     return true;
   }
   return false;
-};
+}; 
 
 const getUserArticles = async (userId) => {
     return await Article.find({ user: userId }).populate('user', '-password');
